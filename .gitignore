@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.db
+*.sqlite
+DEVLOG.md
+.DS_Store
+Thumbs.db
