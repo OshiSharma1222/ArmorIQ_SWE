@@ -7,13 +7,15 @@ import { registerWeatherTools } from './tools/weather.js';
 
 const PORT = process.env.MCP_PORT || 3001;
 
-const server = new McpServer({
-  name: 'armoriq-mcp-server',
-  version: '1.0.0'
-});
-
-registerNoteTools(server);
-registerWeatherTools(server);
+function createServer() {
+  const server = new McpServer({
+    name: 'armoriq-mcp-server',
+    version: '1.0.0'
+  });
+  registerNoteTools(server);
+  registerWeatherTools(server);
+  return server;
+}
 
 const app = express();
 app.use(cors());
@@ -28,6 +30,7 @@ app.get('/sse', async (req, res) => {
     delete transports[transport.sessionId];
   });
 
+  const server = createServer();
   await server.connect(transport);
 });
 
@@ -38,7 +41,7 @@ app.post('/messages', express.json(), async (req, res) => {
     res.status(400).json({ error: 'Unknown session' });
     return;
   }
-  await transport.handlePostMessage(req, res);
+  await transport.handlePostMessage(req, res, req.body);
 });
 
 app.get('/health', (req, res) => {
