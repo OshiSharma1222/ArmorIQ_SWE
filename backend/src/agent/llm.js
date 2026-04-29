@@ -11,6 +11,22 @@ function getClient() {
   return genAI;
 }
 
+async function withRetry(fn, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const is429 = err.message?.includes('429') || err.status === 429;
+      if (!is429 || attempt === maxRetries) throw err;
+
+      const match = err.message?.match(/retry\s+in\s+([\d.]+)/i);
+      const waitSec = match ? Math.ceil(parseFloat(match[1])) + 2 : (attempt + 1) * 15;
+      console.log(`Rate limited, waiting ${waitSec}s before retry ${attempt + 1}/${maxRetries}...`);
+      await new Promise(r => setTimeout(r, waitSec * 1000));
+    }
+  }
+}
+
 export function createChat(tools) {
   const client = getClient();
 
@@ -35,18 +51,22 @@ export function createChat(tools) {
 }
 
 export async function sendMessage(chat, message) {
-  const result = await chat.sendMessage(message);
-  return result.response;
+  return withRetry(async () => {
+    const result = await chat.sendMessage(message);
+    return result.response;
+  });
 }
 
 export async function sendFunctionResult(chat, functionName, response) {
-  const result = await chat.sendMessage([{
-    functionResponse: {
-      name: functionName,
-      response: { result: response }
-    }
-  }]);
-  return result.response;
+  return withRetry(async () => {
+    const result = await chat.sendMessage([{
+      functionResponse: {
+        name: functionName,
+        response: { result: response }
+      }
+    }]);
+    return result.response;
+  });
 }
 
 export function extractFunctionCall(response) {
