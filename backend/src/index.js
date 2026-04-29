@@ -3,13 +3,16 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import policyRouter from './routes/policy.js';
 import logsRouter from './routes/logs.js';
 import agentRouter from './routes/agent.js';
 import MCPClientManager from './mcp/client.js';
 import policyEngine from './policy/engine.js';
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
