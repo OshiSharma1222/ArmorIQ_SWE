@@ -28,41 +28,52 @@ export default function ConversationLogs() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <span className="text-slate-400">Loading conversations...</span>
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 rounded-full animate-pulse-dot" style={{ background: 'var(--primary)' }} />
+          <span style={{ color: 'var(--text-light)' }}>Loading conversations...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)]">
-      <div className="w-80 border-r border-slate-700 overflow-y-auto">
-        <div className="p-4 border-b border-slate-700">
-          <h2 className="text-sm font-semibold text-white">Conversations</h2>
-          <p className="text-xs text-slate-500 mt-1">{conversations.length} total</p>
+    <div className="flex h-[calc(100vh-73px)]">
+      <div className="w-80 overflow-y-auto" style={{ borderRight: '1px solid var(--border)', background: 'var(--bg-subtle)' }}>
+        <div className="p-5" style={{ borderBottom: '1px solid var(--border)' }}>
+          <h2 className="text-sm font-bold" style={{ color: 'var(--text-dark)', fontWeight: 700 }}>Conversations</h2>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-light)' }}>{conversations.length} total</p>
         </div>
 
         {conversations.length === 0 ? (
-          <div className="p-4 text-sm text-slate-500 text-center">
-            No conversations yet
+          <div className="p-6 text-center">
+            <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--text-light)' }}>No conversations yet</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-700/50">
+          <div>
             {conversations.map(c => (
               <button
                 key={c.id}
                 onClick={() => selectConversation(c.id)}
-                className={`w-full text-left px-4 py-3 transition-colors ${
-                  selected === c.id
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-400 hover:bg-slate-800/50'
-                }`}
+                className="w-full text-left px-5 py-4 transition-all duration-200 cursor-pointer"
+                style={{
+                  borderBottom: '1px solid var(--border-light)',
+                  background: selected === c.id ? 'var(--bg)' : 'transparent',
+                  borderLeft: selected === c.id ? '3px solid var(--primary)' : '3px solid transparent'
+                }}
               >
-                <div className="text-sm font-medium">Conversation #{c.id}</div>
-                <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
-                  <span>{c.message_count || 0} messages</span>
-                  <span>{c.total_tokens || 0} tokens</span>
+                <div className="text-sm" style={{ color: 'var(--text-dark)', fontWeight: selected === c.id ? 700 : 500 }}>
+                  Conversation #{c.id}
                 </div>
-                <div className="text-xs text-slate-600 mt-0.5">
+                <div className="flex items-center gap-3 mt-1.5">
+                  <span className="text-xs" style={{ color: 'var(--text-light)' }}>{c.message_count || 0} messages</span>
+                  <span className="text-xs font-mono" style={{ color: 'var(--primary)' }}>{c.total_tokens || 0} tokens</span>
+                </div>
+                <div className="text-xs mt-1" style={{ color: 'var(--text-light)' }}>
                   {new Date(c.created_at + 'Z').toLocaleString()}
                 </div>
               </button>
@@ -73,18 +84,31 @@ export default function ConversationLogs() {
 
       <div className="flex-1 overflow-y-auto">
         {!detail ? (
-          <div className="flex items-center justify-center h-full text-slate-500 text-sm">
-            {selected ? 'Loading...' : 'Select a conversation to view details'}
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="w-16 h-16 rounded-2xl mb-4 flex items-center justify-center" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--text-light)' }}>
+              {selected ? 'Loading...' : 'Select a conversation to view details'}
+            </p>
           </div>
         ) : (
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white">
-                Conversation #{detail.id}
-              </h3>
-              <span className="text-xs text-slate-500">
-                {new Date(detail.created_at + 'Z').toLocaleString()}
-              </span>
+          <div className="p-8 animate-fade-in">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-dark)', fontWeight: 700 }}>
+                  Conversation #{detail.id}
+                </h3>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-light)' }}>
+                  {new Date(detail.created_at + 'Z').toLocaleString()}
+                </p>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -100,54 +124,58 @@ export default function ConversationLogs() {
 }
 
 function LogEntry({ msg }) {
-  const roleStyles = {
-    user: 'bg-blue-500/10 border-blue-500/30 text-blue-300',
-    assistant: 'bg-slate-800 border-slate-700 text-slate-200',
-    tool_call: 'bg-slate-800/50 border-slate-700 text-slate-400',
-    tool_result: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
-    policy: 'bg-red-500/10 border-red-500/30 text-red-300'
+  const roleConfig = {
+    user: { label: 'User', color: 'var(--primary)', bg: 'rgba(224, 123, 76, 0.04)', border: 'rgba(224, 123, 76, 0.2)' },
+    assistant: { label: 'Assistant', color: 'var(--text-dark)', bg: 'var(--bg-subtle)', border: 'var(--border)' },
+    tool_call: { label: 'Tool Call', color: 'var(--text-medium)', bg: 'var(--bg)', border: 'var(--border)' },
+    tool_result: { label: 'Tool Result', color: '#4CAF50', bg: 'rgba(76, 175, 80, 0.04)', border: 'rgba(76, 175, 80, 0.2)' },
+    policy: { label: 'Policy', color: '#D32F2F', bg: 'rgba(211, 47, 47, 0.04)', border: 'rgba(211, 47, 47, 0.2)' }
   };
 
-  const roleLabels = {
-    user: 'User',
-    assistant: 'Assistant',
-    tool_call: 'Tool Call',
-    tool_result: 'Tool Result',
-    policy: 'Policy Decision'
-  };
+  const config = roleConfig[msg.role] || roleConfig.assistant;
 
-  const style = roleStyles[msg.role] || roleStyles.assistant;
+  const policyColors = {
+    allowed: { bg: 'rgba(76, 175, 80, 0.1)', color: '#4CAF50' },
+    blocked: { bg: 'rgba(211, 47, 47, 0.1)', color: '#D32F2F' },
+    pending_approval: { bg: 'rgba(224, 123, 76, 0.1)', color: '#E07B4C' }
+  };
 
   return (
-    <div className={`border rounded-lg px-4 py-3 ${style}`}>
-      <div className="flex items-center justify-between mb-1">
+    <div
+      className="rounded-xl px-5 py-4 animate-fade-in"
+      style={{ background: config.bg, border: `1px solid ${config.border}` }}
+    >
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
-            {roleLabels[msg.role] || msg.role}
+          <span className="w-2 h-2 rounded-full" style={{ background: config.color }} />
+          <span className="text-xs font-bold uppercase tracking-wide" style={{ color: config.color }}>
+            {config.label}
           </span>
           {msg.tool_name && (
-            <span className="text-xs font-mono bg-black/20 px-1.5 py-0.5 rounded">
+            <span className="text-xs font-mono px-2 py-0.5 rounded-md" style={{ background: 'var(--bg-subtle)', color: 'var(--text-medium)' }}>
               {msg.tool_name}
             </span>
           )}
           {msg.policy_decision && (
-            <span className={`text-xs px-1.5 py-0.5 rounded ${
-              msg.policy_decision === 'allowed'
-                ? 'bg-emerald-500/20 text-emerald-400'
-                : msg.policy_decision === 'blocked'
-                  ? 'bg-red-500/20 text-red-400'
-                  : 'bg-yellow-500/20 text-yellow-400'
-            }`}>
+            <span
+              className="text-xs px-2 py-0.5 rounded-md font-bold"
+              style={{
+                background: policyColors[msg.policy_decision]?.bg || 'var(--bg-subtle)',
+                color: policyColors[msg.policy_decision]?.color || 'var(--text-light)'
+              }}
+            >
               {msg.policy_decision}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2 text-xs opacity-50">
-          {msg.token_count > 0 && <span>{msg.token_count} tokens</span>}
+        <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-light)' }}>
+          {msg.token_count > 0 && <span className="font-mono">{msg.token_count} tokens</span>}
           <span>{new Date(msg.created_at + 'Z').toLocaleTimeString()}</span>
         </div>
       </div>
-      <div className="text-sm whitespace-pre-wrap break-words">{msg.content}</div>
+      <div className="text-sm whitespace-pre-wrap break-words" style={{ color: 'var(--text-medium)' }}>
+        {msg.content}
+      </div>
     </div>
   );
 }

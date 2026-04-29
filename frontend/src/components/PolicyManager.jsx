@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { getPolicies, createPolicy, deletePolicy, togglePolicy, getTools } from '../api/index.js';
 
 const RULE_TYPES = [
-  { value: 'block', label: 'Block', description: 'Completely block this tool from executing' },
-  { value: 'require_approval', label: 'Require Approval', description: 'Require human approval before executing' },
-  { value: 'input_validation', label: 'Input Validation', description: 'Validate tool arguments against a pattern' }
+  { value: 'block', label: 'Block', description: 'Completely block this tool from executing', color: '#D32F2F' },
+  { value: 'require_approval', label: 'Require Approval', description: 'Require human approval before executing', color: '#E07B4C' },
+  { value: 'input_validation', label: 'Input Validation', description: 'Validate tool arguments against a pattern', color: '#7B61FF' }
 ];
 
 export default function PolicyManager({ ws }) {
@@ -33,16 +33,12 @@ export default function PolicyManager({ ws }) {
     }
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   useEffect(() => {
     if (!ws?.addListener) return;
     return ws.addListener((msg) => {
-      if (msg.type === 'policy_update') {
-        loadData();
-      }
+      if (msg.type === 'policy_update') loadData();
     });
   }, [ws, loadData]);
 
@@ -51,7 +47,6 @@ export default function PolicyManager({ ws }) {
     const config = form.type === 'input_validation'
       ? { field: validationField, pattern: validationPattern }
       : {};
-
     try {
       await createPolicy({ ...form, config });
       setShowForm(false);
@@ -65,69 +60,92 @@ export default function PolicyManager({ ws }) {
   }
 
   async function handleToggle(id) {
-    try {
-      await togglePolicy(id);
-      await loadData();
-    } catch (err) {
-      alert(err.message);
-    }
+    try { await togglePolicy(id); await loadData(); }
+    catch (err) { alert(err.message); }
   }
 
   async function handleDelete(id) {
     if (!confirm('Delete this policy?')) return;
-    try {
-      await deletePolicy(id);
-      await loadData();
-    } catch (err) {
-      alert(err.message);
-    }
+    try { await deletePolicy(id); await loadData(); }
+    catch (err) { alert(err.message); }
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <span className="text-slate-400">Loading policies...</span>
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 rounded-full animate-pulse-dot" style={{ background: 'var(--primary)' }} />
+          <span style={{ color: 'var(--text-light)' }}>Loading policies...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-8 max-w-4xl mx-auto animate-fade-in">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-lg font-semibold text-white">Guardrail Policies</h2>
-          <p className="text-sm text-slate-400 mt-1">
-            Control which tools the agent can use and how
+          <h2 className="text-xl font-bold" style={{ color: 'var(--text-dark)', fontWeight: 700 }}>
+            Guardrail Policies
+          </h2>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-light)' }}>
+            Define rules that control how the agent uses its tools
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+          className="text-sm px-5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer"
+          style={{
+            background: showForm ? 'var(--bg-subtle)' : 'var(--primary)',
+            color: showForm ? 'var(--text-medium)' : 'white',
+            border: showForm ? '1px solid var(--border)' : 'none',
+            fontWeight: 500
+          }}
         >
           {showForm ? 'Cancel' : 'New Policy'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-slate-800 border border-slate-700 rounded-lg p-5 mb-6">
-          <div className="grid grid-cols-2 gap-4 mb-4">
+        <form
+          onSubmit={handleCreate}
+          className="rounded-xl p-6 mb-8 animate-fade-in"
+          style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border)' }}
+        >
+          <div className="grid grid-cols-2 gap-5 mb-5">
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Policy Name</label>
+              <label className="block text-sm mb-2" style={{ color: 'var(--text-medium)', fontWeight: 500 }}>
+                Policy Name
+              </label>
               <input
                 type="text"
                 required
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
+                style={{
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-dark)',
+                  fontFamily: 'var(--font-sunflower)'
+                }}
                 placeholder="e.g. Block delete operations"
               />
             </div>
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Tool</label>
+              <label className="block text-sm mb-2" style={{ color: 'var(--text-medium)', fontWeight: 500 }}>
+                Tool
+              </label>
               <select
                 value={form.tool_name}
                 onChange={e => setForm({ ...form, tool_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full rounded-lg px-4 py-2.5 text-sm outline-none cursor-pointer"
+                style={{
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-dark)',
+                  fontFamily: 'var(--font-sunflower)'
+                }}
               >
                 <option value="*">All Tools (*)</option>
                 {tools.map(t => (
@@ -137,46 +155,60 @@ export default function PolicyManager({ ws }) {
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm text-slate-400 mb-2">Rule Type</label>
+          <div className="mb-5">
+            <label className="block text-sm mb-3" style={{ color: 'var(--text-medium)', fontWeight: 500 }}>
+              Rule Type
+            </label>
             <div className="grid grid-cols-3 gap-3">
               {RULE_TYPES.map(rt => (
                 <button
                   key={rt.value}
                   type="button"
                   onClick={() => setForm({ ...form, type: rt.value })}
-                  className={`p-3 rounded-lg border text-left text-sm transition-colors ${
-                    form.type === rt.value
-                      ? 'border-blue-500 bg-blue-500/10 text-white'
-                      : 'border-slate-600 bg-slate-900 text-slate-400 hover:border-slate-500'
-                  }`}
+                  className="p-4 rounded-xl text-left text-sm transition-all duration-200 cursor-pointer"
+                  style={{
+                    background: form.type === rt.value ? 'var(--bg)' : 'transparent',
+                    border: form.type === rt.value
+                      ? `2px solid ${rt.color}`
+                      : '1px solid var(--border)',
+                    boxShadow: form.type === rt.value ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
+                  }}
                 >
-                  <div className="font-medium">{rt.label}</div>
-                  <div className="text-xs mt-1 opacity-70">{rt.description}</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: rt.color }} />
+                    <span style={{ color: 'var(--text-dark)', fontWeight: 700 }}>{rt.label}</span>
+                  </div>
+                  <div className="text-xs" style={{ color: 'var(--text-light)' }}>{rt.description}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {form.type === 'input_validation' && (
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-5 mb-5 animate-fade-in">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Field Name</label>
+                <label className="block text-sm mb-2" style={{ color: 'var(--text-medium)', fontWeight: 500 }}>
+                  Field Name
+                </label>
                 <input
                   type="text"
                   value={validationField}
                   onChange={e => setValidationField(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg px-4 py-2.5 text-sm outline-none"
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-dark)' }}
                   placeholder="e.g. path, content"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Regex Pattern</label>
+                <label className="block text-sm mb-2" style={{ color: 'var(--text-medium)', fontWeight: 500 }}>
+                  Regex Pattern
+                </label>
                 <input
                   type="text"
                   value={validationPattern}
                   onChange={e => setValidationPattern(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg px-4 py-2.5 text-sm font-mono outline-none"
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-dark)' }}
                   placeholder="e.g. ^/sandbox/"
                 />
               </div>
@@ -185,7 +217,8 @@ export default function PolicyManager({ ws }) {
 
           <button
             type="submit"
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="text-sm px-6 py-2.5 rounded-lg transition-all duration-200 cursor-pointer"
+            style={{ background: 'var(--primary)', color: 'white', fontWeight: 500 }}
           >
             Create Policy
           </button>
@@ -193,57 +226,77 @@ export default function PolicyManager({ ws }) {
       )}
 
       {policies.length === 0 ? (
-        <div className="text-center py-12 text-slate-500">
-          <p>No policies configured yet.</p>
-          <p className="text-sm mt-1">Create one to start controlling the agent.</p>
+        <div className="text-center py-16 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--bg-subtle)' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--text-medium)' }}>No policies configured yet</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-light)' }}>Create one to start controlling the agent</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {policies.map(policy => (
-            <div
-              key={policy.id}
-              className={`bg-slate-800 border rounded-lg p-4 flex items-center justify-between ${
-                policy.enabled ? 'border-slate-700' : 'border-slate-700/50 opacity-60'
-              }`}
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <span className="text-white font-medium text-sm">{policy.name}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded ${
-                    policy.type === 'block' ? 'bg-red-500/20 text-red-400' :
-                    policy.type === 'require_approval' ? 'bg-yellow-500/20 text-yellow-400' :
-                    'bg-purple-500/20 text-purple-400'
-                  }`}>
-                    {policy.type.replace('_', ' ')}
-                  </span>
-                  <span className="text-xs text-slate-500 font-mono">{policy.tool_name}</span>
-                </div>
-                {policy.config && policy.config !== '{}' && (
-                  <div className="text-xs text-slate-500 mt-1 font-mono">
-                    {typeof policy.config === 'string' ? policy.config : JSON.stringify(policy.config)}
+          {policies.map(policy => {
+            const ruleType = RULE_TYPES.find(r => r.value === policy.type);
+            return (
+              <div
+                key={policy.id}
+                className="rounded-xl p-5 flex items-center justify-between transition-all duration-200 animate-fade-in"
+                style={{
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  opacity: policy.enabled ? 1 : 0.5,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: ruleType?.color || 'var(--text-light)' }} />
+                    <span className="font-bold text-sm" style={{ color: 'var(--text-dark)' }}>{policy.name}</span>
+                    <span
+                      className="text-xs px-2.5 py-0.5 rounded-full"
+                      style={{ background: 'var(--bg-subtle)', color: 'var(--text-light)' }}
+                    >
+                      {policy.type.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs font-mono" style={{ color: 'var(--text-light)' }}>{policy.tool_name}</span>
                   </div>
-                )}
+                  {policy.config && policy.config !== '{}' && (
+                    <div className="text-xs font-mono mt-2 ml-5" style={{ color: 'var(--text-light)' }}>
+                      {typeof policy.config === 'string' ? policy.config : JSON.stringify(policy.config)}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 ml-6">
+                  <button
+                    onClick={() => handleToggle(policy.id)}
+                    className="w-11 h-6 rounded-full transition-all duration-200 relative cursor-pointer"
+                    style={{
+                      background: policy.enabled ? 'var(--primary)' : 'var(--border)'
+                    }}
+                  >
+                    <span
+                      className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-200"
+                      style={{
+                        left: policy.enabled ? '24px' : '4px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
+                      }}
+                    />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(policy.id)}
+                    className="text-xs px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer"
+                    style={{ color: 'var(--text-light)', border: '1px solid var(--border)' }}
+                    onMouseEnter={e => { e.target.style.color = '#D32F2F'; e.target.style.borderColor = '#D32F2F'; }}
+                    onMouseLeave={e => { e.target.style.color = 'var(--text-light)'; e.target.style.borderColor = 'var(--border)'; }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2 ml-4">
-                <button
-                  onClick={() => handleToggle(policy.id)}
-                  className={`w-10 h-5 rounded-full transition-colors relative ${
-                    policy.enabled ? 'bg-emerald-500' : 'bg-slate-600'
-                  }`}
-                >
-                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    policy.enabled ? 'left-5' : 'left-0.5'
-                  }`} />
-                </button>
-                <button
-                  onClick={() => handleDelete(policy.id)}
-                  className="text-slate-500 hover:text-red-400 text-sm px-2 transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
