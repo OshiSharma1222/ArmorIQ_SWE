@@ -21,7 +21,7 @@ export function createChat(tools) {
   }));
 
   const model = client.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
     tools: functionDeclarations.length > 0
       ? [{ functionDeclarations }]
       : undefined
