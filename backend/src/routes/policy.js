@@ -24,7 +24,7 @@ router.post('/', (req, res) => {
 
   const result = db.prepare(
     'INSERT INTO policies (name, type, tool_name, config, enabled) VALUES (?, ?, ?, ?, ?)'
-  ).run(name, type, tool_name, JSON.stringify(config || {}), enabled !== undefined ? enabled : 1);
+  ).run(name, type, tool_name, JSON.stringify(config || {}), enabled !== undefined ? (enabled ? 1 : 0) : 1);
 
   const policy = db.prepare('SELECT * FROM policies WHERE id = ?').get(result.lastInsertRowid);
 
@@ -52,7 +52,7 @@ router.put('/:id', (req, res) => {
     type || existing.type,
     tool_name || existing.tool_name,
     JSON.stringify(config || JSON.parse(existing.config)),
-    enabled !== undefined ? enabled : existing.enabled,
+    enabled !== undefined ? (enabled ? 1 : 0) : existing.enabled,
     id
   );
 
