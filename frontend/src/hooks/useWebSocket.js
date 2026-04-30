@@ -16,8 +16,16 @@ export default function useWebSocket() {
     let retryTimeout;
 
     function connect() {
-      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
+      let wsUrl;
+      const backendUrl = import.meta.env.VITE_WS_URL;
+      if (backendUrl) {
+        wsUrl = backendUrl;
+      } else {
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        wsUrl = `${protocol}://${window.location.host}/ws`;
+      }
+
+      ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => setConnected(true);

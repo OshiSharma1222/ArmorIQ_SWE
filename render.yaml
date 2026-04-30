@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: armoriq-backend
+    runtime: node
+    plan: free
+    buildCommand: cd mcp-server && npm install && cd ../backend && npm install
+    startCommand: node start.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: MCP_PORT
+        value: 3001
+      - key: MCP_SERVER_URL
+        value: http://localhost:3001
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest

@@ -1,0 +1,10 @@
+{
+  "name": "armoriq-swe",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:all": "cd mcp-server && npm install && cd ../backend && npm install",
+    "start": "node start.js"
+  }
+}
